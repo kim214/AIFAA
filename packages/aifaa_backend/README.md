@@ -5,7 +5,7 @@ The backend provides APIs for AI chat assistance, first aid library access, user
 
 
 
-##  Tech Stack
+##  Tech Stack 
 
 - **Language:** Python 3.10+
 - **Framework:** FastAPI
