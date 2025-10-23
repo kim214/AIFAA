@@ -1,0 +1,95 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.log
+*.pot
+*.pyc
+*.mypy_cache/
+*.pytest_cache/
+*.ruff_cache/
+*.coverage
+.coverage.*
+.cache/
+.dmypy.json
+.pyre/
+.pytype/
+.env
+venv/
+ENV/
+env/
+.venv/
+
+# --- IDEs & Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+
+# --- Virtual Environments ---
+venv/
+.venv/
+ENV/
+env/
+
+# --- Byte-compiled / optimized / DLL files ---
+*.dll
+*.so
+*.dylib
+
+# --- FastAPI / Uvicorn ---
+*.pid
+
+# --- Test / Reports ---
+htmlcov/
+.tox/
+.nox/
+*.log
+reports/
+test-results/
+
+# --- Database / Data ---
+*.db
+*.sqlite3
+*.sqlite
+*.sql
+migrations/
+alembic.ini
+
+# --- Environment & Secrets ---
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+secrets.json
+config.json
+
+# --- Packaging / Build ---
+build/
+dist/
+*.egg-info/
+.eggs/
+*.spec
+
+# --- Docker ---
+Dockerfile
+docker-compose.yml
+*.tar
+*.img
+*.pid
+*.log
+
+# --- Misc ---
+*.zip
+*.tar.gz
+*.tgz
+*.bak
