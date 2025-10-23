@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "AIFAA.ios",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,6 +26,7 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.nathan_k.im.AIFAA"
     },
+    
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
