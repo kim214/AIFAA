@@ -1,0 +1,65 @@
+# ─────────────────────────────
+# 🚀 AIFAA React Native (Expo + Monorepo) Git Ignore
+# ─────────────────────────────
+
+# Expo & React Native build artifacts
+.expo/
+.expo-shared/
+dist/
+build/
+web-build/
+android/
+ios/
+*.keystore
+*.jks
+
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript & Babel
+tsbuildinfo.json
+*.tsbuildinfo
+babel.config.js
+metro.config.local.js
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.swp
+
+# Cache folders
+.cache/
+npm-cache/
+expo-packager-cache-*/
+metro-cache/
+.expo/web/cache/
+tmp/
+
+# Miscellaneous
+*.orig
+*.rej
+
+# ─────────────────────────────
+# 👇 Auto-generated file (keep this)
+# ─────────────────────────────
+expo-env.d.ts
+# @end expo-cli
