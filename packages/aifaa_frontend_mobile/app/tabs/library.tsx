@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 export default function Library() {
   const [activeTab, setActiveTab] = useState("All");
@@ -50,7 +51,9 @@ export default function Library() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={22} color="#0B3C5D" />
+        </TouchableOpacity>
         <View>
           <Text style={styles.title}>First Aid Library</Text>
           <Text style={styles.subtitle}>WHO-approved guidelines</Text>
