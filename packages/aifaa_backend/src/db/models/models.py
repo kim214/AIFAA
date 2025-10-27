@@ -5,6 +5,17 @@ import sys, os, enum, uuid
 from datetime import datetime
 from src.db.base import Base
 
+class Language(Base):
+    __tablename__ = "languages"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True)
+    code = Column(String, unique=True)
+    region = Column(String, nullable=True)
+
+    users = relationship("User", back_populates="language")
+    guides = relationship("FirstAidGuide", back_populates="language")
+
 class User(Base):
     __tablename__ = "users"
 
@@ -17,24 +28,13 @@ class User(Base):
     chat_sessions = relationship("ChatSession", back_populates="user")
     emergency_logs = relationship("EmergencyCallLog", back_populates="user")
 
-class Language(Base):
-    __tablename__ = "languages"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, unique=True)
-    code = Column(String, unique=True)
-    region = Column(String, nullable=True)
-
-    users = relationship("User", back_populates="language")
-    guides = relationship("FirstAidGuide", back_populates="language")
-
 class FirstAidGuide(Base):
     __tablename__ = "first_aid_guides"
 
     id = Column(UUID, primary_key=True, default=uuid.uuid4)
     title = Column(String, nullable=False)
     category = Column(String, nullable=False)
-    steps = Column(JSON, nullable=False)
+    steps = Column(JSONB, nullable=False)
     language_id = Column(ForeignKey("languages.id"))
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
 
