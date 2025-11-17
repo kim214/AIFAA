@@ -8,19 +8,59 @@ import {
   StyleSheet,
   Alert,
   SafeAreaView,
+  Modal,
+  FlatList,
+  Linking,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const segments = useSegments();
+  const insets = useSafeAreaInsets();
+
+  // 🔹 Detect current route
+  const currentRoute = segments[1] || 'settings';
+
+  // 🔹 Animation for Emergency icon
+  const pulse = useSharedValue(1);
+  pulse.value = withRepeat(withTiming(1.1, { duration: 1200 }), -1, true);
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
+
   const [voiceGuidance, setVoiceGuidance] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState('English');
   const [voiceType, setVoiceType] = useState('Female (Calm)');
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
   const toggleVoiceGuidance = () => setVoiceGuidance(!voiceGuidance);
   const toggleDarkMode = () => setDarkMode(!darkMode);
+
+  const languages = [
+    'English',
+    'Kiswahili',
+    'Kalenjin',
+    'Kikuyu',
+    'Luo',
+    'Luhya',
+    'Kamba',
+    'Maasai',
+    'Meru',
+  ];
+
+  const handleCallEmergency = () => {
+    Linking.openURL('tel:911'); // Replace with Kenya’s local emergency number if needed
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,9 +87,7 @@ export default function SettingsScreen() {
           <View style={styles.settingRow}>
             <Text style={styles.settingLabel}>App Language</Text>
             <TouchableOpacity
-              onPress={() =>
-                Alert.alert('Change Language', 'Feature coming soon')
-              }
+              onPress={() => setLanguageModalVisible(true)}
               style={styles.optionBox}
             >
               <Text style={styles.optionText}>{language}</Text>
@@ -130,9 +168,7 @@ export default function SettingsScreen() {
 
           <Text style={styles.subText}>Version 1.0.0</Text>
           <Text style={styles.subText}>Based on WHO First Aid Guidelines</Text>
-          <Text style={styles.subText}>
-            Made with ❤️ for Kenya and beyond
-          </Text>
+          <Text style={styles.subText}>Made with ❤️ for Kenya and beyond</Text>
         </View>
 
         {/* Disclaimer */}
@@ -145,6 +181,98 @@ export default function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      {/* 🔹 Language Modal */}
+      <Modal
+        visible={languageModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setLanguageModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Select App Language</Text>
+            <FlatList
+              data={languages}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.languageOption}
+                  onPress={() => {
+                    setLanguage(item);
+                    setLanguageModalVisible(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.languageText,
+                      item === language && { color: '#0284c7', fontWeight: '700' },
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              showsVerticalScrollIndicator
+            />
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setLanguageModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ⬇️ Bottom Navigation Bar */}
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom || 10 }]}>
+        {[
+          { name: 'home', label: 'Home', icon: 'home-outline', route: '/tabs' },
+          {
+            name: 'chatbot',
+            label: 'Chat',
+            icon: 'chatbubble-ellipses-outline',
+            route: '/tabs/chatbot',
+          },
+          {
+            name: 'emergency',
+            label: 'Emergency',
+            icon: 'alert-circle-outline',
+            route: '/tabs/emergency',
+          },
+          { name: 'library', label: 'Library', icon: 'book-outline', route: '/tabs/library' },
+          { name: 'settings', label: 'Settings', icon: 'settings-outline', route: '/tabs/settings' },
+        ].map((tab) => {
+          const isActive = currentRoute === tab.name;
+          const color = isActive ? '#ef4444' : '#6b7280';
+          return (
+            <TouchableOpacity
+              key={tab.name}
+              style={styles.navItem}
+              activeOpacity={0.85}
+              onPress={() => router.push(tab.route)}
+            >
+              {tab.name === 'emergency' ? (
+                <Animated.View style={pulseStyle}>
+                  <Ionicons name={tab.icon as any} size={26} color={color} />
+                </Animated.View>
+              ) : (
+                <Ionicons name={tab.icon as any} size={22} color={color} />
+              )}
+              <Text
+                style={[
+                  styles.navText,
+                  { color, fontWeight: isActive ? '700' : '500' },
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </SafeAreaView>
   );
 }
@@ -262,5 +390,72 @@ const styles = StyleSheet.create({
     color: '#444',
     lineHeight: 18,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    width: '85%',
+    maxHeight: '70%',
+    borderRadius: 16,
+    padding: 16,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0284c7',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  languageOption: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  languageText: {
+    fontSize: 14,
+    color: '#0f172a',
+    textAlign: 'center',
+  },
+  closeButton: {
+    marginTop: 12,
+    alignSelf: 'center',
+    backgroundColor: '#0284c7',
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    borderTopWidth: 0.3,
+    borderColor: '#e5e7eb',
+    height: 70,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  navItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navText: {
+    fontSize: 11,
+    color: '#6b7280',
+    marginTop: 2,
+  },
 });
-

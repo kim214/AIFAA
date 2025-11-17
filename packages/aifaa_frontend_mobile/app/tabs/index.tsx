@@ -6,10 +6,10 @@ import {
   ScrollView,
   StyleSheet,
   Linking,
-  Vibration,
   Image,
+  Dimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -17,27 +17,42 @@ import Animated, {
   useAnimatedStyle,
   withRepeat,
   withTiming,
+  Easing,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width } = Dimensions.get('window');
 
 export default function Index() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const segments = useSegments();
+  const currentRoute = segments[1] || 'home';
 
-  // Pulse animation for emergency button
+  // 🔴 Pulse for emergency icon in nav
   const pulse = useSharedValue(1);
-  pulse.value = withRepeat(withTiming(1.05, { duration: 1000 }), -1, true);
+  pulse.value = withRepeat(withTiming(1.1, { duration: 1200 }), -1, true);
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }],
   }));
 
-  const handleEmergencyPress = () => {
-    Vibration.vibrate(60);
-    router.push('/tabs/chatbot');
-  };
+  // 💬 Pulse for chatbot button glow
+  const glow = useSharedValue(1);
+  glow.value = withRepeat(
+    withTiming(1.2, {
+      duration: 1500,
+      easing: Easing.inOut(Easing.ease),
+    }),
+    -1,
+    true
+  );
+  const glowStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: glow.value }],
+    opacity: 0.8,
+  }));
 
   const handleCallEmergency = () => {
-    Linking.openURL('tel:911'); // replace with your region's emergency number
+    Linking.openURL('tel:911');
   };
 
   const openTopic = (topicId: string, title: string) => {
@@ -56,42 +71,33 @@ export default function Index() {
   ];
 
   return (
-    <LinearGradient
-      colors={['#ffffff', '#f0f9ff']}
-      style={[styles.container, { paddingTop: insets.top }]}
-    >
-      {/* 🧷 Fixed Logo Header */}
-      <View style={styles.fixedHeader}>
-        <Image
-          source={require('../../src/assets/aifaa_logo.png')}
-          style={styles.logoImage}
-          resizeMode="contain"
-        />
-      </View>
-
-      {/* Scrollable Content */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100, paddingTop: 100 }} // push down to not overlap logo
-      >
-        {/* Header Icons */}
-        <View style={styles.headerIconsContainer}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => router.push('/tabs/library')}
-          >
-            <Ionicons name="book-outline" size={22} color="#1f2937" />
+    <LinearGradient colors={['#ffffff', '#f0f9ff']} style={[styles.container, { paddingTop: insets.top }]}>
+      {/* 🔝 Top Navigation Bar */}
+      <View style={styles.topNav}>
+        <View style={styles.navLeft}>
+          <Image
+            source={require('../../src/assets/aifaa_logo.png')}
+            style={styles.logoImage}
+            resizeMode="cover"
+          />
+          
+        </View>
+        <View style={styles.navRight}>
+          <TouchableOpacity style={styles.navIcon}>
+            <Ionicons name="notifications-outline" size={22} color="#1f2937" />
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => router.push('/tabs/settings')}
-          >
+          <TouchableOpacity style={styles.navIcon} onPress={() => router.push('/tabs/settings')}>
             <Ionicons name="settings-outline" size={22} color="#1f2937" />
           </TouchableOpacity>
         </View>
+      </View>
 
-        {/* Title Section */}
+      {/* 🔽 Scrollable Main Content */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 140, paddingTop: 100 }}
+      >
+        {/* Title */}
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Stay Calm. We're Here to Help.</Text>
           <Text style={styles.subtitle}>
@@ -99,19 +105,16 @@ export default function Index() {
           </Text>
         </View>
 
-        {/* Emergency Button */}
+        {/* 🚨 Emergency Buttons */}
         <View style={styles.emergencySection}>
-          <Animated.View style={pulseStyle as any}>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              style={styles.emergencyButton}
-              onPress={handleEmergencyPress}
-            >
-              <Ionicons name="alert-circle" size={42} color="white" />
-              <Text style={styles.emergencyText}>EMERGENCY</Text>
-              <Text style={styles.emergencySub}>Tap for Immediate Help</Text>
-            </TouchableOpacity>
-          </Animated.View>
+          <TouchableOpacity
+            style={styles.bigEmergencyButton}
+            activeOpacity={0.85}
+            onPress={() => router.push('/tabs/emergency')}
+          >
+            <Ionicons name="alert" size={22} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.bigEmergencyText}>Start Emergency Assistance</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.callButton}
@@ -127,7 +130,7 @@ export default function Index() {
           </Text>
         </View>
 
-        {/* Quick Access */}
+        {/* 🩹 Quick Access */}
         <Text style={styles.sectionTitle}>Quick Access</Text>
         <View style={styles.quickGrid}>
           {quickAccess.map((item) => (
@@ -146,131 +149,108 @@ export default function Index() {
           ))}
         </View>
 
-        {/* Feature Highlights */}
-        <View style={styles.featureContainer}>
-          <View style={styles.featureCard}>
-            <Ionicons name="flash-outline" size={26} color="#f59e0b" />
-            <View style={styles.featureTextContainer}>
-              <Text style={styles.featureTitle}>Instant Guidance</Text>
-              <Text style={styles.featureDesc}>
-                Get step-by-step instructions immediately when every second counts.
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.featureCard}>
-            <Ionicons name="cloud-offline-outline" size={26} color="#3b82f6" />
-            <View style={styles.featureTextContainer}>
-              <Text style={styles.featureTitle}>Works Offline</Text>
-              <Text style={styles.featureDesc}>
-                Access critical first aid info even without internet connection.
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.featureCard}>
-            <Ionicons name="mic-outline" size={26} color="#10b981" />
-            <View style={styles.featureTextContainer}>
-              <Text style={styles.featureTitle}>Voice Enabled</Text>
-              <Text style={styles.featureDesc}>
-                Hands-free guidance when you need both hands for helping.
-              </Text>
-            </View>
-          </View>
-        </View>
-
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            This app provides first aid guidance but does not replace professional medical care. 
+            This app provides first aid guidance but does not replace professional medical care.
             Always call emergency services for serious emergencies.
           </Text>
         </View>
       </ScrollView>
+
+      {/* 💬 Floating Chatbot Button */}
+      <Animated.View style={[styles.chatGlow, glowStyle]}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          style={styles.chatButton}
+          onPress={() => router.push('/tabs/chatbot')}
+        >
+          <Ionicons name="chatbubbles-outline" size={24} color="#fff" />
+        </TouchableOpacity>
+      </Animated.View>
+      
+
+      {/* ⬇️ Floating Bottom Navigation Bar */}
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom || 12 }]}>
+        {[
+          { name: 'home', label: 'Home', icon: 'home-outline', route: '/tabs' },
+          { name: 'emergency', label: 'Emergency', icon: 'alert-circle-outline', route: '/tabs/emergency' },
+          { name: 'library', label: 'Library', icon: 'book-outline', route: '/tabs/library' },
+        ].map((tab) => {
+          const isActive = currentRoute === tab.name;
+          const color = isActive ? '#ef4444' : '#6b7280';
+          return (
+            <TouchableOpacity
+              key={tab.name}
+              style={styles.navItem}
+              activeOpacity={0.85}
+              onPress={() => router.push(tab.route)}
+            >
+              {tab.name === 'emergency' ? (
+                <Animated.View style={pulseStyle}>
+                  <Ionicons name={tab.icon as any} size={26} color={color} />
+                </Animated.View>
+              ) : (
+                <Ionicons name={tab.icon as any} size={24} color={color} />
+              )}
+              <Text
+                style={[
+                  styles.navText,
+                  { color, fontWeight: isActive ? '700' : '500' },
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-
-  // Fixed Logo Header
-  fixedHeader: {
+  container: { flex: 1, paddingHorizontal: 20 },
+  topNav: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 10,
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.95)',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    paddingHorizontal: 20,
     paddingVertical: 10,
     borderBottomWidth: 0.3,
     borderColor: '#e5e7eb',
+    zIndex: 10,
   },
-  logoImage: {
-    width: 90,
-    height: 90,
-  },
-
-  headerIconsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: -10,
-    marginBottom: 10,
-  },
-  iconButton: {
+  navLeft: { flexDirection: 'row', alignItems: 'center' },
+  navRight: { flexDirection: 'row', alignItems: 'center' },
+  navIcon: {
     backgroundColor: '#f3f4f6',
     padding: 8,
     borderRadius: 50,
     marginLeft: 10,
   },
-  titleContainer: {
+  logoImage: { width: 70, height: 70 },
+  appName: { fontSize: 17, fontWeight: '700', color: '#111827', marginLeft: 8 },
+  titleContainer: { alignItems: 'center', marginTop: 10 },
+  title: { fontSize: 20, fontWeight: '700', color: '#111827', textAlign: 'center', marginBottom: 4 },
+  subtitle: { fontSize: 13, color: '#6b7280', textAlign: 'center', lineHeight: 18 },
+  emergencySection: { alignItems: 'center', marginTop: 20 },
+  bigEmergencyButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    textAlign: 'center',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#6b7280',
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  emergencySection: {
-    alignItems: 'center',
-    marginTop: 25,
-  },
-  emergencyButton: {
-    width: 250,
-    height: 120,
-    backgroundColor: '#ef4444',
-    borderRadius: 16,
     justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#ef4444',
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    backgroundColor: '#ef4444',
+    borderRadius: 14,
+    paddingVertical: 16,
+    width: '100%',
     elevation: 6,
   },
-  emergencyText: {
-    color: 'white',
-    fontWeight: '800',
-    fontSize: 20,
-    marginTop: 4,
-  },
-  emergencySub: {
-    color: 'white',
-    fontSize: 12,
-    marginTop: 2,
-  },
+  bigEmergencyText: { color: '#fff', fontWeight: '700', fontSize: 16, textTransform: 'uppercase' },
   callButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -281,87 +261,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginTop: 14,
   },
-  callText: {
-    color: '#ef4444',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  infoText: {
-    color: '#9ca3af',
-    fontSize: 11,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  sectionTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#111827',
-    marginTop: 30,
-    marginBottom: 10,
-  },
-  quickGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
+  callText: { color: '#ef4444', fontWeight: '600', fontSize: 14 },
+  infoText: { color: '#9ca3af', fontSize: 11, marginTop: 10, textAlign: 'center' },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111827', marginTop: 30, marginBottom: 10 },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   quickCard: {
     width: '47%',
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     borderRadius: 14,
     paddingVertical: 18,
     paddingHorizontal: 12,
     alignItems: 'center',
     marginBottom: 14,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
-  iconContainer: {
-    padding: 10,
-    borderRadius: 50,
-    marginBottom: 10,
-  },
-  quickTitle: {
-    fontWeight: '700',
-    color: '#111827',
-    fontSize: 14,
-    marginBottom: 3,
-  },
-  quickDesc: {
-    color: '#6b7280',
-    fontSize: 11,
-    textAlign: 'center',
-  },
-  featureContainer: {
-    marginTop: 20,
-  },
-  featureCard: {
-    backgroundColor: 'white',
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  featureTextContainer: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  featureTitle: {
-    fontWeight: '700',
-    color: '#111827',
-    fontSize: 14,
-  },
-  featureDesc: {
-    color: '#6b7280',
-    fontSize: 11,
-    marginTop: 2,
-  },
+  iconContainer: { padding: 10, borderRadius: 50, marginBottom: 10 },
+  quickTitle: { fontWeight: '700', color: '#111827', fontSize: 14, marginBottom: 3 },
+  quickDesc: { color: '#6b7280', fontSize: 11, textAlign: 'center' },
   footer: {
     backgroundColor: '#fef3c7',
     borderRadius: 8,
@@ -369,10 +285,48 @@ const styles = StyleSheet.create({
     marginTop: 25,
     marginBottom: 20,
   },
-  footerText: {
-    color: '#92400e',
-    fontSize: 11,
-    textAlign: 'center',
-    lineHeight: 16,
+  footerText: { color: '#92400e', fontSize: 11, textAlign: 'center', lineHeight: 16 },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: width * 0.85,
+    borderRadius: 35,
+    height: 65,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 8,
   },
-});
+  navItem: { alignItems: 'center', justifyContent: 'center' },
+  navText: { fontSize: 11, marginTop: 2 },
+  chatGlow: {
+    position: 'absolute',
+    bottom: 95,
+    right: 25,
+    backgroundColor: '#0bc1eaff',
+    borderRadius: 35,
+    padding: 4,
+    shadowColor: '#12e0f3ff',
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+  },
+  chatButton: {
+    backgroundColor: '#21a3eaff',
+    borderRadius: 30,
+    padding: 14,
+    elevation: 8,
+  },
+  chatLabel: {
+    position: 'absolute',
+    bottom: 70,
+    right: 26,
+    fontSize: 11,
+    color: '#ef4444',
+    fontWeight: '600',
+  },
+});    
